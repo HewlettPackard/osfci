@@ -1,6 +1,5 @@
 #!/bin/bash
-export LD_LIBRARY_PATH=/usr/local/old/gnutls/lib/
-/usr/bin/iPDU $1
+/usr/local/bin/iPDU $1
 if [ "$1" == "off" ]
 then
 echo "Running cleanup" >/tmp/cleanup

@@ -1,0 +1,3 @@
+#!/bin/bash
+\rm /usr/local/bin/iPDU
+ln -s $i /usr/local/bin/iPDU
