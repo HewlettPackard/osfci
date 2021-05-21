@@ -874,7 +874,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Highest priority must be set to the signed request
-	mux.HandleFunc("/ci/", handlers.LoggingHandler(base.Zlog.Infof, home))
+	mux.HandleFunc("/ci/", home)
 	mux.HandleFunc("/user/", user)
 	mux.HandleFunc("/", bmcweb)
 
@@ -951,7 +951,7 @@ func main() {
 		server := &http.Server{
 			Addr:         ":443",
 			Handler:      mux,
-			ErrorLog:     base.Zlog.Errorf,
+			ErrorLog:     base.Zlog,
 			ReadTimeout:  600 * time.Second,
 			WriteTimeout: 600 * time.Second,
 			IdleTimeout:  120 * time.Second,
