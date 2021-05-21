@@ -951,7 +951,6 @@ func main() {
 		server := &http.Server{
 			Addr:         ":443",
 			Handler:      mux,
-			ErrorLog:     base.Zlog,
 			ReadTimeout:  600 * time.Second,
 			WriteTimeout: 600 * time.Second,
 			IdleTimeout:  120 * time.Second,
@@ -969,7 +968,7 @@ func main() {
 
 		server.ListenAndServeTLS("", "")
 	} else {
-		go http.ListenAndServe(":80", http.HandlerFunc(httpsRedirect))
+		go http.ListenAndServe(":80", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(httpsRedirect)))
 		// Launch TLS server
 		if err := http.ListenAndServeTLS(":443", tlsCertPath, tlsKeyPath, mux); err != nil {
 			base.Zlog.Fatalf("Server TLS error: %s", err.Error())
