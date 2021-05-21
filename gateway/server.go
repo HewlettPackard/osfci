@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/handlers"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
 	"html/template"
@@ -873,7 +874,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Highest priority must be set to the signed request
-	mux.HandleFunc("/ci/", home)
+	mux.HandleFunc("/ci/", handlers.LoggingHandler(base.Zlog, home))
 	mux.HandleFunc("/user/", user)
 	mux.HandleFunc("/", bmcweb)
 
@@ -950,6 +951,7 @@ func main() {
 		server := &http.Server{
 			Addr:         ":443",
 			Handler:      mux,
+			ErrorLog:     base.Zlog,
 			ReadTimeout:  600 * time.Second,
 			WriteTimeout: 600 * time.Second,
 			IdleTimeout:  120 * time.Second,
