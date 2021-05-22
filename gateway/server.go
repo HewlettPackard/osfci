@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/handlers"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
 	"html/template"
@@ -20,7 +19,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"path"
 	"strings"
 	"sync"
@@ -249,7 +247,7 @@ func user(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-
+	base.Zlog.Infof("Access by: %s - %s %s", r.RemoteAddr, r.Proto, r.Method)
 	// The cookie allow us to track the current
 	// user on the node
 	cookie, cookieErr := r.Cookie("osfci_cookie")
@@ -839,6 +837,7 @@ func bmcweb(w http.ResponseWriter, r *http.Request) {
 
 //Default Intialize
 func init() {
+
 	config := base.Configuration{
 		EnableConsole:     false,                                   //print output on the console, Good for debugging in local
 		ConsoleLevel:      base.Debug,                              //Debug level log
@@ -864,12 +863,6 @@ func main() {
 	print("| Private use only            |\n")
 	print("=============================== \n")
 	print(" Please do not forget to set TLS_CERT_PATH/TLS_KEY_PATH/STATIC_ASSETS_DIR to there relevant path\n")
-
-	//for raw Apache style logging
-	accessLog, errSA := os.OpenFile("/usr/local/production/logs/server_access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
-	if errSA != nil {
-		base.Zlog.Fatalf("Server access log file error: %s", errSA.Error())
-	}
 
 	err := initServerconfig()
 	//If there is error reading the config file log error and exit
@@ -974,7 +967,7 @@ func main() {
 
 		server.ListenAndServeTLS("", "")
 	} else {
-		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog, http.HandlerFunc(httpsRedirect)))
+		go http.ListenAndServe(":80", http.HandlerFunc(httpsRedirect))
 		// Launch TLS server
 		if err := http.ListenAndServeTLS(":443", tlsCertPath, tlsKeyPath, mux); err != nil {
 			base.Zlog.Fatalf("Server TLS error: %s", err.Error())
