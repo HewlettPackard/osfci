@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"path"
 	"strings"
 	"sync"
@@ -978,7 +977,7 @@ func main() {
 
 		server.ListenAndServeTLS("", "")
 	} else {
-		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog, http.HandlerFunc(httpsRedirect))) //os.Stdout
+		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog.Write, http.HandlerFunc(httpsRedirect))) //os.Stdout
 		// Launch TLS server
 		if err := http.ListenAndServeTLS(":443", tlsCertPath, tlsKeyPath, mux); err != nil {
 			base.Zlog.Fatalf("Server TLS error: %s", err.Error())
