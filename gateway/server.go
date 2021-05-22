@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
-	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 	"html/template"
 	"io/ioutil"
 	"net"
@@ -857,15 +856,6 @@ func init() {
 }
 
 func main() {
-	//for raw Apache style logging
-	accessLog = &lumberjack.Logger{
-		MaxSize:    100, // megabytes
-		MaxBackups: 10,
-		MaxAge:     30,   //days
-		Compress:   true, // disabled by default
-		Filename:   "/usr/local/production/logs/server_access.log",
-	}
-
 	base.Zlog.Infof("Starting server...")
 	print("=============================== \n")
 	print("| Starting frontend           |\n")
@@ -873,6 +863,12 @@ func main() {
 	print("| Private use only            |\n")
 	print("=============================== \n")
 	print(" Please do not forget to set TLS_CERT_PATH/TLS_KEY_PATH/STATIC_ASSETS_DIR to there relevant path\n")
+
+	//for raw Apache style logging
+	accessLog, err := os.OpenFile("/usr/local/production/logs/server_access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+	if err != nil {
+		base.Zlog.Fatalf("Server access log file error: %s", err.Error())
+	}
 
 	err := initServerconfig()
 	//If there is error reading the config file log error and exit
@@ -977,7 +973,7 @@ func main() {
 
 		server.ListenAndServeTLS("", "")
 	} else {
-		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog.Write, http.HandlerFunc(httpsRedirect))) //os.Stdout
+		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog, http.HandlerFunc(httpsRedirect)))
 		// Launch TLS server
 		if err := http.ListenAndServeTLS(":443", tlsCertPath, tlsKeyPath, mux); err != nil {
 			base.Zlog.Fatalf("Server TLS error: %s", err.Error())
