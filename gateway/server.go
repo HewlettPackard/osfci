@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/acme/autocert"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 	"html/template"
 	"io/ioutil"
 	"net"
@@ -840,6 +841,14 @@ func bmcweb(w http.ResponseWriter, r *http.Request) {
 //Default Intialize
 func init() {
 
+	accessLog := &lumberjack.Logger{
+		MaxSize:    100, // megabytes
+		MaxBackups: 10,
+		MaxAge:     30,   //days
+		Compress:   true, // disabled by default
+		Filename:   "/usr/local/production/logs/server_access.log",
+	}
+
 	config := base.Configuration{
 		EnableConsole:     false,                                   //print output on the console, Good for debugging in local
 		ConsoleLevel:      base.Debug,                              //Debug level log
@@ -969,7 +978,7 @@ func main() {
 
 		server.ListenAndServeTLS("", "")
 	} else {
-		go http.ListenAndServe(":80", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(httpsRedirect)))
+		go http.ListenAndServe(":80", handlers.LoggingHandler(accessLog, http.HandlerFunc(httpsRedirect))) //os.Stdout
 		// Launch TLS server
 		if err := http.ListenAndServeTLS(":443", tlsCertPath, tlsKeyPath, mux); err != nil {
 			base.Zlog.Fatalf("Server TLS error: %s", err.Error())
