@@ -840,15 +840,6 @@ func bmcweb(w http.ResponseWriter, r *http.Request) {
 
 //Default Intialize
 func init() {
-
-	accessLog := &lumberjack.Logger{
-		MaxSize:    100, // megabytes
-		MaxBackups: 10,
-		MaxAge:     30,   //days
-		Compress:   true, // disabled by default
-		Filename:   "/usr/local/production/logs/server_access.log",
-	}
-
 	config := base.Configuration{
 		EnableConsole:     false,                                   //print output on the console, Good for debugging in local
 		ConsoleLevel:      base.Debug,                              //Debug level log
@@ -867,6 +858,15 @@ func init() {
 }
 
 func main() {
+	//for raw Apache style logging
+	accessLog = &lumberjack.Logger{
+		MaxSize:    100, // megabytes
+		MaxBackups: 10,
+		MaxAge:     30,   //days
+		Compress:   true, // disabled by default
+		Filename:   "/usr/local/production/logs/server_access.log",
+	}
+
 	base.Zlog.Infof("Starting server...")
 	print("=============================== \n")
 	print("| Starting frontend           |\n")
