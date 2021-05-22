@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -865,9 +866,9 @@ func main() {
 	print(" Please do not forget to set TLS_CERT_PATH/TLS_KEY_PATH/STATIC_ASSETS_DIR to there relevant path\n")
 
 	//for raw Apache style logging
-	accessLog, err := os.OpenFile("/usr/local/production/logs/server_access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
-	if err != nil {
-		base.Zlog.Fatalf("Server access log file error: %s", err.Error())
+	accessLog, errSA := os.OpenFile("/usr/local/production/logs/server_access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+	if errSA != nil {
+		base.Zlog.Fatalf("Server access log file error: %s", errSA.Error())
 	}
 
 	err := initServerconfig()
